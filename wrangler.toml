@@ -1,0 +1,7 @@
+name = "snowy-glade-b23b"
+main = "index.html"
+compatibility_date = "2024-01-01"
+account_id = "c951a7dc821a20adf94a1e2740094e96"
+
+[assets]
+directory = "."
