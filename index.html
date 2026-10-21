@@ -621,7 +621,9 @@
   .step1-map-wrap{ position:relative; z-index:0; margin-bottom:0.9rem; border-radius:12px; overflow:hidden; box-shadow:0 1px 2px rgba(11,27,43,0.06), 0 8px 24px rgba(11,27,43,0.08); }
   .step1-map-wrap .route-map-canvas{ height:200px; border-radius:0; box-shadow:none; }
   /* ASAP button — inline chip inside the label */
-  .asap-btn{ display:inline-block; margin-left:auto; float:right; padding:0.15rem 0.5rem; background:transparent; border:1.5px solid var(--brass); border-radius:5px; color:var(--brass); font-size:0.75rem; font-weight:700; cursor:pointer; line-height:1.4; vertical-align:middle; transition:background 0.15s, color 0.15s; }
+  .time-label-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem; }
+  .time-label-row label{ margin-bottom:0; }
+  .asap-btn{ padding:0.15rem 0.6rem; background:transparent; border:1.5px solid var(--brass); border-radius:5px; color:var(--brass); font-size:0.75rem; font-weight:700; cursor:pointer; line-height:1.4; transition:background 0.15s, color 0.15s; }
   .asap-btn:hover{ background:var(--brass); color:var(--white); }
   .route-map-wrap{ position:relative; z-index:0; margin-top:0.3rem; }
   .route-map-hint{
@@ -962,7 +964,10 @@
               <p class="err" id="date-err" hidden></p>
             </div>
             <div class="field">
-              <label for="time" id="timeLabel">Pickup time <button type="button" class="asap-btn" id="asapBtn" aria-label="Set to now plus 5 minutes">ASAP</button></label>
+              <div class="time-label-row">
+                <label for="time" id="timeLabel">Pickup time</label>
+                <button type="button" class="asap-btn" id="asapBtn" aria-label="Set to now plus 5 minutes">ASAP</button>
+              </div>
               <input type="time" id="time" name="time" aria-describedby="time-hint time-err">
               <p class="err" id="time-err" hidden></p>
             </div>
