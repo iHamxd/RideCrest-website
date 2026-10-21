@@ -12,9 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Wrangler
+        run: npm install -g wrangler@latest
+
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: c951a7dc821a20adf94a1e2740094e96
-          command: deploy --assets . --name snowy-glade-b23b --compatibility-date 2024-01-01
+        run: wrangler deploy --assets . --name snowy-glade-b23b --compatibility-date 2024-01-01
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: c951a7dc821a20adf94a1e2740094e96
