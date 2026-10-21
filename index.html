@@ -617,6 +617,12 @@
   .map-toggle summary::-webkit-details-marker{ display:none; }
   .map-toggle summary svg{ width:18px; height:18px; color:var(--brass); flex:none; }
   .map-toggle summary span{ text-decoration:underline; text-decoration-color:var(--brass); text-underline-offset:3px; }
+  /* step 1 always-on map */
+  .step1-map-wrap{ position:relative; z-index:0; margin-bottom:0.9rem; border-radius:12px; overflow:hidden; box-shadow:0 1px 2px rgba(11,27,43,0.06), 0 8px 24px rgba(11,27,43,0.08); }
+  .step1-map-wrap .route-map-canvas{ height:200px; border-radius:0; box-shadow:none; }
+  /* ASAP button */
+  .asap-btn{ display:block; width:100%; margin-top:0.5rem; padding:0.45rem 0.9rem; background:transparent; border:1.5px solid var(--brass); border-radius:8px; color:var(--brass); font-size:0.88rem; font-weight:600; cursor:pointer; text-align:center; transition:background 0.15s, color 0.15s; }
+  .asap-btn:hover{ background:var(--brass); color:var(--white); }
   .route-map-wrap{ position:relative; z-index:0; margin-top:0.3rem; }
   .route-map-hint{
     position:absolute; top:12px; left:12px; right:12px; z-index:500; width:max-content; max-width:calc(100% - 24px);
@@ -944,6 +950,11 @@
             </label>
           </div>
 
+          <div class="step1-map-wrap" id="step1Map">
+            <div class="route-map-canvas" id="routeMapCanvas" role="img" aria-label="Map of your route"></div>
+            <p class="route-map-hint" id="routeMapHint">Enter your pickup and drop-off to see your route</p>
+          </div>
+
           <div class="pair">
             <div class="field">
               <label for="date">Date</label>
@@ -956,6 +967,7 @@
               <p class="err" id="time-err" hidden></p>
             </div>
           </div>
+          <button type="button" class="asap-btn" id="asapBtn">Need it soon? Use current time</button>
           <p class="hint" id="time-hint" hidden></p>
 
           <div class="field" id="flightHelperWrap" hidden>
@@ -1036,16 +1048,6 @@
             <p class="fare-note">Your price is fixed once your booking is confirmed. <a href="faq.html#fixed-price" target="_blank" rel="noopener">Good to know</a>. <span id="fareSource"></span></p>
           </div>
 
-          <details class="map-toggle" id="routeMap" hidden>
-            <summary>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13M15 6.5v13"/></svg>
-              <span>See your route on the map</span>
-            </summary>
-            <div class="route-map-wrap">
-              <div class="route-map-canvas" id="routeMapCanvas" role="img" aria-label="Map of your route"></div>
-              <p class="route-map-hint" id="routeMapHint">Choose your pickup and drop-off to see your route</p>
-            </div>
-          </details>
 
           <button type="button" class="btn btn-brass btn-block" id="toStep3">Continue</button>
         </div>
@@ -3140,7 +3142,7 @@ var RideCrestPricing = (function(){
       currentFare = computeFare(r);
       updateFlightSuggestion();
       renderFare(currentFare);
-      if(mapIsOpen()) showMap(need.points, my);
+      showMap(need.points, my);
     });
   }
 
@@ -3148,9 +3150,8 @@ var RideCrestPricing = (function(){
      ROUTE MAP — shows the route the fare is based on, once both ends are
      chosen. The map library only loads the first time it's needed.
      ================================================================ */
-  var mapBox = $('routeMap'), mapEl = $('routeMapCanvas'), leafletLoad = null, map = null, mapLayer = null;
+  var mapBox = $('step1Map'), mapEl = $('routeMapCanvas'), leafletLoad = null, map = null, mapLayer = null;
   function loadLeaflet(){
-    return Promise.reject(new Error('no map in the Claude copy'));
     if(window.L) return Promise.resolve(window.L);
     if(leafletLoad) return leafletLoad;
     leafletLoad = new Promise(function(resolve, reject){
@@ -3166,7 +3167,7 @@ var RideCrestPricing = (function(){
     });
     return leafletLoad;
   }
-  function hideMap(){ mapBox.hidden = true; }
+  function hideMap(){ /* map is always shown, nothing to hide */ }
   var mapHint = $('routeMapHint'), mapWanted = false;
   /* the map itself: made once, centred on Southampton until there's a route */
   function ensureMap(){
@@ -3198,14 +3199,10 @@ var RideCrestPricing = (function(){
     mapHint.hidden = false;
     map.setView([SOTON.lat, SOTON.lon], 11);
   }
-  /* the map only loads when someone opens "See your route on the map", so the page stays fast */
-  function mapIsOpen(){ return !!(mapBox && mapBox.open && !mapBox.hidden); }
-  mapBox.addEventListener('toggle', function(){
-    if(!mapBox.open) return;
-    mapWanted = true;
-    if(lastPoints && currentFare) showMap(lastPoints, priceSeq);
-    else ensureMap().then(function(){ resetMap(); }).catch(hideMap);
-  });
+  /* map is always visible on step 1 */
+  function mapIsOpen(){ return true; }
+  /* load the map straight away showing Southampton */
+  ensureMap().then(function(){ resetMap(); }).catch(function(){});
   /* the line to draw: the road route if we have it, else straight lines between the points */
   function routeLine(points){
     var g = routeShapes[waypointKey(points)], out = [];
@@ -4527,7 +4524,7 @@ var RideCrestPricing = (function(){
     for(var i = 1; i <= 3; i++) stepEls[i].hidden = i !== n;
     renderStepbar();
     renderSummaries();
-    if(n === 2 && mapIsOpen() && lastPoints && currentFare) showMap(lastPoints, priceSeq);   /* resize the map now it's showing */
+    if(map) setTimeout(function(){ map.invalidateSize(); }, 50);   /* resize the map after step change */
     if(barBook) barBook.textContent = n > 1 ? 'Your booking' : 'Get a price';
     if(!opts.noScroll) scrollCardTop();
     if(!opts.noFocus) focusEl(stepEls[n]);
@@ -4539,6 +4536,19 @@ var RideCrestPricing = (function(){
       if(n && n !== step && !b.disabled) goStep(n);
     });
   });
+  /* ASAP button — fills today's date and current time + 5 minutes */
+  $('asapBtn').addEventListener('click', function(){
+    var now = new Date(Date.now() + 5 * 60 * 1000);
+    var pad = function(n){ return n < 10 ? '0' + n : '' + n; };
+    var dateVal = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+    var timeVal = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    form.date.value = dateVal;
+    form.time.value = timeVal;
+    form.date.dispatchEvent(new Event('change', { bubbles: true }));
+    form.time.dispatchEvent(new Event('change', { bubbles: true }));
+    schedulePrice();
+  });
+
   $('toStep2').addEventListener('click', function(){
     var bad = validate(null, 'trip');
     if(bad){ showInvalid(bad); return; }
