@@ -17,3 +17,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: c951a7dc821a20adf94a1e2740094e96
+          command: deploy --assets . --name snowy-glade-b23b --compatibility-date 2024-01-01
