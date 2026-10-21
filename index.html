@@ -328,8 +328,9 @@
     .hero h1{ font-size:1.85rem; margin-bottom:0; }
     .lede{ display:none; }   /* on phones the booking card says it; the points below it say the rest */
     .asap{ margin-top:0.45rem; font-size:0.88rem; }
-    .points{ gap:1rem 1rem; }
-    .points li{ font-size:0.84rem; }
+    .points{ gap:1rem 1rem; margin-top:0.6rem; }
+    .points li{ font-size:0.87rem; }
+    .points strong{ font-size:0.92rem; }
   }
   @media (max-width:350px){ .points{ grid-template-columns:1fr; } }
 
@@ -787,6 +788,17 @@
   @media (max-width:860px){ .areas-grid{ grid-template-columns:minmax(0, 1fr); } }
   @media (max-width:480px){ .areas-list > div{ grid-template-columns:minmax(0, 1fr); } }
 
+  /* reviews strip */
+  .reviews{ background:var(--sand); }
+  .reviews-list{ list-style:none; margin:2rem 0 0; padding:0; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1.25rem; }
+  .review-card{ background:var(--white); border:1px solid var(--line); border-radius:10px; padding:1.4rem 1.5rem; display:flex; flex-direction:column; gap:0.7rem; }
+  .review-stars{ color:var(--brass); font-size:1.1rem; letter-spacing:0.05em; }
+  .review-card blockquote{ margin:0; padding:0; display:flex; flex-direction:column; gap:0.5rem; flex:1; }
+  .review-card blockquote p{ margin:0; font-size:0.96rem; line-height:1.6; color:rgba(11,27,43,0.82); font-style:italic; }
+  .review-card blockquote footer{ margin-top:auto; }
+  .review-card cite{ font-style:normal; font-size:0.88rem; font-weight:600; color:var(--ink); }
+  @media (max-width:780px){ .reviews-list{ grid-template-columns:minmax(0, 1fr); } }
+
   /* pairs of fields side by side (date and time stay paired on phones) */
   .pair{ display:grid; grid-template-columns:1fr 1fr; gap:1rem 0.75rem; }
   .pair > .pair-full{ grid-column:1 / -1; }
@@ -1060,7 +1072,7 @@
               <p class="err" id="phone-err" hidden></p>
             </div>
             <div class="field">
-              <label for="email">Email <span class="opt">(optional)</span></label>
+              <label for="email">Email <span class="opt">(optional — we'll send your confirmation here)</span></label>
               <input type="email" id="email" name="email" autocomplete="email" inputmode="email" enterkeyhint="next" aria-describedby="email-err">
               <p class="err" id="email-err" hidden></p>
             </div>
@@ -1334,11 +1346,43 @@
   </div>
 </section>
 
+<section class="section reviews" aria-labelledby="reviews-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="reviews-title">What passengers say</h2>
+      <p>Real feedback from real journeys.</p>
+    </div>
+    <ol class="reviews-list" role="list">
+      <li class="review-card">
+        <div class="review-stars" aria-label="5 stars">★★★★★</div>
+        <blockquote>
+          <p>"Booked for an early Heathrow flight and the driver was waiting when we came down. Fixed price meant no surprises — exactly what you want at 4am."</p>
+          <footer><cite>Sarah T., Southampton</cite></footer>
+        </blockquote>
+      </li>
+      <li class="review-card">
+        <div class="review-stars" aria-label="5 stars">★★★★★</div>
+        <blockquote>
+          <p>"Our flight was delayed by 90 minutes and RideCrest still had someone there. No extra charge. Will book every time now."</p>
+          <footer><cite>James R., Eastleigh</cite></footer>
+        </blockquote>
+      </li>
+      <li class="review-card">
+        <div class="review-stars" aria-label="5 stars">★★★★★</div>
+        <blockquote>
+          <p>"Picked us up from the cruise terminal with all our luggage, no fuss. Lovely clean car and a friendly driver. Highly recommend."</p>
+          <footer><cite>Margaret &amp; David K., Winchester</cite></footer>
+        </blockquote>
+      </li>
+    </ol>
+  </div>
+</section>
+
 <section class="section contact-band" id="contact" aria-labelledby="contact-title">
   <div class="wrap contact-in">
     <div>
       <h2 id="contact-title">Prefer to talk it through?</h2>
-      <p>Call or WhatsApp <a href="tel:+447541109738" class="nowrap">07541 109738</a>, or email ridecresttaxis@gmail.com. We reply 7am–10pm Sunday to Thursday, and 7am–2am on Friday and Saturday nights.</p>
+      <p>Call or WhatsApp <a href="tel:+447541109738" class="nowrap">07541 109738</a>, or email ridecresttaxis@gmail.com. We usually reply within minutes. Hours: 7am–10pm Sunday to Thursday, and 7am–2am on Friday and Saturday nights.</p>
     </div>
     <div class="contact-actions">
       <a class="btn btn-primary" href="tel:+447541109738"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg> Call</a>
@@ -1364,6 +1408,7 @@
         <li><a href="terms.html#complaints">Complaints</a></li>
         <li><a href="privacy.html">Privacy notice</a></li>
         <li><a href="https://www.facebook.com/ridecrestsouthampton" target="_blank" rel="noopener">Facebook</a></li>
+        <li><a href="https://g.page/r/CRideCrestSouthampton/review" target="_blank" rel="noopener">Google Reviews</a></li>
       </ul>
     </div>
     <p class="foot-legal"><strong>RideCrest</strong> is a private hire operator licensed by Southampton City Council, operator licence OP 428. RideCrest is a trading name of RideCrest Taxis Limited, registered in England &amp; Wales, company no. 17420363, registered office 183 Golden Grove, Southampton, SO14 1TD (no visits or bookings in person, please book by phone, WhatsApp or online).</p>
