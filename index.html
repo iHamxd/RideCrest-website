@@ -1029,7 +1029,30 @@
                 <button type="button" aria-label="More large suitcases">+</button>
               </div>
             </div>
-            <input type="hidden" id="small" name="small" value="0">
+            <div class="field">
+              <label for="med">Medium bags</label>
+              <div class="stepper">
+                <button type="button" aria-label="Fewer medium bags">−</button>
+                <input type="number" id="med" name="med" min="0" max="8" value="0" inputmode="numeric">
+                <button type="button" aria-label="More medium bags">+</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="small">Small bags</label>
+              <div class="stepper">
+                <button type="button" aria-label="Fewer small bags">−</button>
+                <input type="number" id="small" name="small" min="0" max="8" value="0" inputmode="numeric">
+                <button type="button" aria-label="More small bags">+</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="buggy">Child buggies</label>
+              <div class="stepper">
+                <button type="button" aria-label="Fewer child buggies">−</button>
+                <input type="number" id="buggy" name="buggy" min="0" max="3" value="0" inputmode="numeric">
+                <button type="button" aria-label="More child buggies">+</button>
+              </div>
+            </div>
           </div>
           <p class="luggage-nudge" id="luggageNudge" hidden>Bringing suitcases? Add them so we send a car with room for everything.</p>
 
@@ -1633,7 +1656,8 @@
     {"id": "estate", "name": "Estate", "seats": 4, "bags": 3, "pricePerMile": 2.1, "minFare": 10, "tourWaitPerHour": 30},
     {"id": "executive", "name": "Executive", "seats": 3, "bags": 2, "pricePerMile": 2.7, "minFare": 15, "meterMinFare": 25, "tourWaitPerHour": 40},
     {"id": "mpv", "name": "MPV 6-seater", "seats": 6, "bags": 4, "pricePerMile": 2.5, "localPricePerMile": 4, "localNightRate": false, "leavingPercent": 42, "londonPercent": 15, "minFare": 20, "meterMinFare": 20, "tourWaitPerHour": 30},
-    {"id": "eight", "name": "MPV 8-seater", "seats": 8, "bags": 8, "pricePerMile": 2.7, "localPricePerMile": 4, "localNightRate": false, "leavingPercent": 42, "londonPercent": 15, "minFare": 30, "meterMinFare": 30, "tourWaitPerHour": 30}
+    {"id": "eight", "name": "MPV 8-seater", "seats": 8, "bags": 8, "pricePerMile": 2.7, "localPricePerMile": 4, "localNightRate": false, "leavingPercent": 42, "londonPercent": 15, "minFare": 30, "meterMinFare": 30, "tourWaitPerHour": 30},
+    {"id": "wav", "name": "Wheelchair Accessible", "seats": 4, "bags": 4, "pricePerMile": 2.5, "localPricePerMile": 4, "localNightRate": false, "leavingPercent": 42, "londonPercent": 15, "minFare": 20, "meterMinFare": 20, "tourWaitPerHour": 30, "wheelchair": true}
   ],
   "airports": [
     {"name": "Heathrow", "dropOff": 7, "pickup": 15.5, "r": 1.2, "match": "heathrow|\\bTW6\\b", "points": [[51.4694,-0.4502],[51.4713,-0.4589],[51.4593,-0.4459],[51.4723,-0.4884]]},
@@ -1950,6 +1974,7 @@ var RideCrestPricing = (function(){
       var vid = v.id;
       var price = vid === 'estate' ? f[1]
                 : vid === 'mpv' ? f[2]
+                : vid === 'wav' ? f[2]
                 : vid === 'eight' ? f[3]
                 : vid === 'executive' ? f[4]
                 : f[0];
@@ -2388,7 +2413,8 @@ var RideCrestPricing = (function(){
     estate: ['M3 19V14.6Q3 12.6 5 12.3L14 11L20.5 5.8H55Q58 5.8 59.4 8.6L61 12.8V19Z', 'M18.5 10.6L22.3 7.4H54.4L56.1 10.6Z', 16, 48],
     executive: ['M2 19V14.9Q2 13 4 12.6L13.5 11.3L20.8 6.2H41.5L48 11.3L60.2 12.7Q62 13 62 14.9V19Z', 'M18.3 10.9L22.8 7.8H40.2L44.4 10.9Z', 15, 49],
     mpv:    ['M3 19V13.8Q3 12 4.8 11.5L11 10L17.5 3.8H54Q58 3.8 59.4 7L61 12V19Z', 'M14.2 9.9L18.6 5.4H53.5L55.7 9.9Z', 15, 49],
-    eight:  ['M3 19V11.5Q3 9.8 4.5 9.3L9.5 7.5L13.5 2.5H57Q61 2.5 61 6.5V19Z', 'M10.6 8.7L14.3 4.2H57.2V8.7Z', 14, 50]
+    eight:  ['M3 19V11.5Q3 9.8 4.5 9.3L9.5 7.5L13.5 2.5H57Q61 2.5 61 6.5V19Z', 'M10.6 8.7L14.3 4.2H57.2V8.7Z', 14, 50],
+    wav:    ['M3 19V13.8Q3 12 4.8 11.5L11 10L17.5 3.8H54Q58 3.8 59.4 7L61 12V19Z', 'M14.2 9.9L18.6 5.4H53.5L55.7 9.9Z', 15, 49]
   };
 
   var SOTON = RideCrestPricing.SOTON;           /* Southampton city centre */
@@ -2418,7 +2444,7 @@ var RideCrestPricing = (function(){
     date:$('date'), time:$('time'),
     returnToggle:$('returnToggleField'), returnOn:$('returnOn'), returnFields:$('returnFields'),
     rdate:$('rdate'), rtime:$('rtime'), rflightField:$('rflightField'), rflight:$('rflight'),
-    pax:$('pax'), big:$('big'), small:$('small'),
+    pax:$('pax'), big:$('big'), med:$('med'), small:$('small'), buggy:$('buggy'),
     vehicles:$('vehicles'), vehicleGroup:$('vehicleGroup'), vehicleHint:$('vehicle-hint'),
     fareBox:$('fareBox'), fareRate:$('fareRate'), fareAmount:$('fareAmount'), fareDetail:$('fareDetail'), fareSource:$('fareSource'),
     fareLines:$('fareLines'), fareExtraNote:$('fareExtraNote'),
@@ -3630,7 +3656,7 @@ var RideCrestPricing = (function(){
     updateFlightSuggestion();
     /* luggage nudge for airport and cruise trips */
     var bags = c.type === 'airport' || c.type === 'cruise' || c.fromAirport || c.toAirport || c.fromShip || c.toShip;
-    ctxEls.nudge.hidden = !(bags && num(el.big) + num(el.small) === 0);
+    ctxEls.nudge.hidden = !(bags && num(el.big) + num(el.med) + num(el.small) + num(el.buggy) === 0);
   }
   function setHelperOpen(open){
     ctxEls.helper.hidden = !open;
@@ -3820,7 +3846,7 @@ var RideCrestPricing = (function(){
     var card = h('span', { 'class':'veh-card' }, [
       carIcon(v.id),
       h('strong', null, [v.name]),
-      h('small', { 'class':'veh-cap' }, [v.seats + ' passengers, ' + v.bags + (v.bags === 1 ? ' suitcase' : ' suitcases')]),
+      h('small', { 'class':'veh-cap' }, [v.seats + ' passengers, ' + v.bags + (v.bags === 1 ? ' suitcase' : ' suitcases') + (v.wheelchair ? ', wheelchair ramp' : '')]),
       why,
       h('span', { 'class':'veh-price' }, [total])
     ]);
@@ -3835,9 +3861,10 @@ var RideCrestPricing = (function(){
   function rateOf(v){ return FARES.rateOf(v); }
   function rateFor(){ return rateOf(currentVehicle()); }
   function tooSmallFor(v){
-    var pax = num(el.pax), big = num(el.big);
+    var pax = num(el.pax), big = num(el.big), med = num(el.med), sm = num(el.small), bug = num(el.buggy);
     if(pax > v.seats) return 'Too small for ' + pax + ' passengers';
-    if(big > v.bags) return 'Too small for ' + big + ' large cases';
+    var totalBagSpace = big + Math.ceil(med * 0.5) + bug;
+    if(totalBagSpace > v.bags) return 'Too much luggage for this vehicle';
     return '';
   }
   function withArticle(name){ return (/^[aeiou8]/i.test(name) || /^MPV/.test(name) ? 'an ' : 'a ') + name; }
@@ -3974,10 +4001,12 @@ var RideCrestPricing = (function(){
   }
 
   /* ---------- turn the form into a booking summary ---------- */
-  function luggageText(big, small){
+  function luggageText(big, med, small, buggy){
     var parts = [];
     if(big) parts.push(big + (big === 1 ? ' large suitcase' : ' large suitcases'));
+    if(med) parts.push(med + (med === 1 ? ' medium bag' : ' medium bags'));
     if(small) parts.push(small + (small === 1 ? ' small bag' : ' small bags'));
+    if(buggy) parts.push(buggy + (buggy === 1 ? ' child buggy' : ' child buggies'));
     return parts.length ? parts.join(', ') : 'None';
   }
 
@@ -4009,7 +4038,7 @@ var RideCrestPricing = (function(){
     if(rc.toAirport && !rc.fromAirport && $('flightTime').value) rows.push(['Flight departs', $('flightTime').value]);
     if((t === 'cruise' || rc.fromShip || rc.toShip) && val(el.ship)) rows.push(['Ship', val(el.ship)]);
     rows.push(['Passengers', String(num(el.pax))]);
-    rows.push(['Luggage', luggageText(num(el.big), num(el.small))]);
+    rows.push(['Luggage', luggageText(num(el.big), num(el.med), num(el.small), num(el.buggy))]);
     rows.push(['Vehicle', currentVehicle() ? currentVehicle().name : 'Not chosen']);
     if(t !== 'tour'){
       if(el.returnOn.checked){
@@ -4735,9 +4764,12 @@ var RideCrestPricing = (function(){
     if(outWhen) row('When', outWhen);
     if(backWhen) row('Return', backWhen);
     if(v){
-      var pax = num(el.pax), big = num(el.big);
-      row('Car', v.name + ', ' + pax + (pax === 1 ? ' passenger' : ' passengers') +
-                 (big ? ', ' + big + (big === 1 ? ' large case' : ' large cases') : ''));
+      var pax = num(el.pax), big = num(el.big), med = num(el.med), bug = num(el.buggy);
+      var carDesc = v.name + ', ' + pax + (pax === 1 ? ' passenger' : ' passengers');
+      if(big) carDesc += ', ' + big + (big === 1 ? ' large case' : ' large cases');
+      if(med) carDesc += ', ' + med + (med === 1 ? ' medium bag' : ' medium bags');
+      if(bug) carDesc += ', ' + bug + (bug === 1 ? ' buggy' : ' buggies');
+      row('Car', carDesc);
     }
     var prepay = prepayReason();
     if(prepay) row('Paying', 'In advance, as we’re collecting you ' + prepayWhere(prepay));
@@ -4782,7 +4814,7 @@ var RideCrestPricing = (function(){
         return { id:s.id, name:s.name, full:s.full, lat:s.lat, lon:s.lon, hours:s.hours, role:s.role || '', flight:s.flight || '', custom:!!s.custom };
       }),
       date:el.date.value, time:el.time.value, returnOn:el.returnOn.checked, rdate:el.rdate.value, rtime:el.rtime.value,
-      flightTime:ctxEls.flightTime.value, pax:num(el.pax), big:num(el.big), small:num(el.small),
+      flightTime:ctxEls.flightTime.value, pax:num(el.pax), big:num(el.big), med:num(el.med), small:num(el.small), buggy:num(el.buggy),
       vehicle:(currentVehicle() || VEHICLES[0]).id,
       name:val(el.name), phone:val(el.phone), email:val(el.email), notes:el.notes.value,
       flight:val(el.flight), rflight:val(el.rflight), ship:val(el.ship),
@@ -4833,7 +4865,7 @@ var RideCrestPricing = (function(){
       el.rdate.value = str(d.rdate); el.rtime.value = str(d.rtime);
       ctxEls.flightTime.value = str(d.flightTime);
       if(d.flightTime) setHelperOpen(true);
-      el.pax.value = d.pax || 1; el.big.value = d.big || 0; el.small.value = d.small || 0;
+      el.pax.value = d.pax || 1; el.big.value = d.big || 0; el.med.value = d.med || 0; el.small.value = d.small || 0; el.buggy.value = d.buggy || 0;
       syncSteppers();
       var slot = vehicleSlots[d.vehicle];
       if(slot) slot.input.checked = true;
