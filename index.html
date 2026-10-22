@@ -1532,10 +1532,9 @@
                  across the city (city centre, Shirley, Bassett, Bitterne, Woolston, Ocean Terminal),
                  October 2026. Other cars are priced in proportion to their £ a mile (e.g. Estate =
                  saloon journey × 2.10 ÷ 2). No outsideSouthampton % (one end is in Southampton).
-                 Coming back, the airport's parking charge replaces the drop-off charge. Every price is
-                 a whole pound each way: the journey is rounded so that it plus the drop-off charge (or
-                 plus the parking charge coming back) comes to the nearest pound, and the charge itself
-                 stays at cost. Airports not listed here (Scotland, Northern Ireland) are priced like
+                 THE SAME PRICE EACH WAY (rule from 23 Oct 2026): coming back costs exactly what going
+                 costs; the airport's parking/pick-up charge is not added on top. Every price is a whole
+                 pound each way, all-in (airport charges included). Airports not listed here (Scotland, Northern Ireland) are priced like
                  any other journey
        localAirportFares  fixed all-in prices between an airport and anywhere in Southampton (SO14–SO19),
                  one way, no stops, for the cars listed: the same both ways, day and night, with the
@@ -2111,9 +2110,10 @@ var RideCrestPricing = (function(){
           if(ends[e][0] && inSouthampton(ends[e][1]) === true){
             var name = ends[e][0].name, la = localAirportFare(name, v);
             /* e = 0: we collect from the airport on the way out, and take you back to it on a return */
-            var fl = local ? null : [fixedLeg(name, v, e === 0), fixedLeg(name, v, e !== 0)];
+            var fl = local ? null : fixedLeg(name, v, e === 0);
             if(la != null) fixed = { airport:name, journey:la, legJourneys:[la, la], allIn:true };
-            else if(fl && fl[0]) fixed = { airport:name, journey:fl[0].journey, legJourneys:[fl[0].journey, fl[1].journey], fromAirport:e === 0 };
+            /* the same all-in price each way, airport charges included (nothing extra for pick-up parking) */
+            else if(fl) fixed = { airport:name, journey:fl.total, legJourneys:[fl.total, fl.total], allIn:true };
           }
         }
       }
@@ -2220,16 +2220,17 @@ var RideCrestPricing = (function(){
        its drop-off charge; coming back (fromAirport) it includes the car park fee for our waiting time. The
        journey is the total less that charge, so the charge itself stays at cost. If the car park fee isn't
        known, total is null and the journey is rounded on its own. null if the airport has no fixed price. */
+    /* PERMANENT RULE (23 Oct 2026): the price is the SAME each way. Coming back from the airport costs the
+       customer exactly what going to it costs; the airport's parking/pick-up charge is NOT added on top
+       (we absorb it). So both directions return the same all-in total, with no separate airport charge. */
     function fixedLeg(airportName, v, fromAirport){
       var f = (S.fixedFares || []).filter(function(x){ return x && x.airport === airportName && typeof x.saloonTotal === 'number'; })[0];
       if(!f) return null;
       var a = AIRPORTS.filter(function(x){ return x.name === airportName; })[0];
       var dropOff = a ? a.dropOff : 0;
       var journey = (f.saloonTotal - dropOff) * rateOf(v) / rateOf(vehicle('saloon'));
-      var charge = fromAirport ? (a ? a.pickup : null) : dropOff;
-      if(charge == null) return { total:null, journey:roundPound(journey), charge:null };
-      var total = roundPound(journey + charge);
-      return { total:total, journey:round2(total - charge), charge:charge };
+      var total = roundPound(journey + dropOff);
+      return { total:total, journey:total, charge:0 };
     }
     /* the journey part going to the airport (without its drop-off charge), or null if there's no fixed price */
     function fixedJourney(airportName, v){
