@@ -1843,6 +1843,29 @@ var RideCrestPricing = (function(){
       return out;
     }
 
+    /* ---------- cruise port access fee ---------- */
+    /* £5 when we collect from a cruise terminal and the drop-off is a regular home/address —
+       not an airport, another cruise terminal, a hotel or a private tour. Covers the port's
+       access charge for the taxi entering the terminal to pick up. */
+    var CRUISE_TERMINAL_RE = /cruise terminal|ocean terminal|qeii terminal|mayflower|horizon cruise|city cruise/i;
+    var HOTEL_RE = /\bhotel\b|\binn\b|\blodge\b|\bmotel\b|\bguest ?house\b|\bb&b\b|\bbed and breakfast\b|premier inn|travelodge|holiday inn|marriott|hilton|radisson|novotel|ibis|doubletree|hyatt|jurys|intercontinental|ramada|crowne plaza|best western|hampton by|courtyard by|four seasons|de vere|malmaison|village hotel|thistle hotel|mercure|leonardo hotel|britannia hotel/i;
+    var CRUISE_PORT_FEE = 5;
+    function isCruiseTerminalLabel(label){ return CRUISE_TERMINAL_RE.test(String(label || '')); }
+    function isHotelLabel(label){ return HOTEL_RE.test(String(label || '')); }
+    function cruiseExtras(b){
+      /* tours excluded */
+      if(b.type === 'tour') return [];
+      var pickupLabel = b.pickupText || (b.pickup && b.pickup.label) || '';
+      var dropoffLabel = b.dropoffText || (b.dropoff && b.dropoff.label) || '';
+      /* pickup must be at a cruise terminal */
+      if(!isCruiseTerminalLabel(pickupLabel)) return [];
+      /* drop-off must be a plain home/address — not airport, cruise terminal or hotel */
+      if(airportAt(b.dropoff)) return [];
+      if(isCruiseTerminalLabel(dropoffLabel)) return [];
+      if(isHotelLabel(dropoffLabel)) return [];
+      return [{ label:'Cruise port access fee', amount:CRUISE_PORT_FEE, cruise:true }];
+    }
+
     /* ---------- private tours: the day's timetable ---------- */
     /* minutes after pickup that they reach and leave each place, with extra driving time for
        traffic (tourTrafficAllowance, and at least 10 minutes a drive), rounded up to 5 minutes */
@@ -2043,7 +2066,7 @@ var RideCrestPricing = (function(){
       var outsidePct = leaving ? (miles <= leaveUpTo ? leavePct : 0) : (pts && !fixed ? outsidePercent(pts) : 0);
       var outside = leaving ? round2(outsideLeg * legs) : (outsidePct > 0 ? outsideExtra(perLeg, outsidePct) * legs : 0);
       /* an all-in fixed price already includes the airport's charges */
-      var extras = (fixed && fixed.allIn ? [] : airportExtras(b)).concat(congestionExtras(pts, legs, starts, plan));
+      var extras = (fixed && fixed.allIn ? [] : airportExtras(b)).concat(congestionExtras(pts, legs, starts, plan)).concat(cruiseExtras(b));
       var extrasTotal = extras.reduce(function(sum, e){ return sum + (e.amount || 0); }, 0);
       var journey = 0;
       for(var j = 0; j < legs; j++) journey += legJourney(j);
@@ -3416,8 +3439,9 @@ var RideCrestPricing = (function(){
     var journey = money(journeyPrice(f)) + ' (' + basis + (f.legs === 2 ? ', return' : '') +
                   (guess ? ', to be confirmed' : '') + ')';
     if(!f.extras.length && !f.waiting) return [['Price', journey]];
-    var airport = f.extras.filter(function(e){ return !e.london; });
+    var airport = f.extras.filter(function(e){ return !e.london && !e.cruise; });
     var london = f.extras.filter(function(e){ return e.london; });
+    var cruise = f.extras.filter(function(e){ return e.cruise; });
     var atCost = airport.some(function(e){ return e.amount == null; });
     var rows = [
       ['Price', money(f.grand) + ' in total' + (atCost ? ' + airport parking at cost' : '')],
@@ -3428,6 +3452,9 @@ var RideCrestPricing = (function(){
       rows.push(['Airport charges', airport.map(function(e){
         return (e.amount != null ? money(e.amount) + ' ' : '') + e.label + (e.amount == null ? ' (at cost)' : '');
       }).join('; ')]);
+    }
+    if(cruise.length){
+      rows.push(['Port access fee', cruise.map(function(e){ return money(e.amount); }).join(' + ')]);
     }
     if(london.length){
       rows.push(['London Congestion Charge', money(PRICES.congestionCharge) +
