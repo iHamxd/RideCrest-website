@@ -13,7 +13,11 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230B1B2B'/%3E%3Cpath d='M50 14 L80 26 V50 C80 69 67 80 50 86 C33 80 20 69 20 50 V26 Z' fill='none' stroke='%23C9A063' stroke-width='6' stroke-linejoin='round'/%3E%3Cpath d='M30 53 Q40 45 50 53 T70 53' fill='none' stroke='%23C9A063' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- SPEED (23 Oct 2026): the fonts load without blocking the first paint (same fonts, same look; text shows at once in a fallback font and switches when they arrive). The two preloads start the main font files early. Keep this. -->
+<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/fraunces/v38/6NU78FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0KxC9TeA.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -2485,9 +2489,12 @@ var RideCrestPricing = (function(){
   function num(input){ var n = parseInt(input.value, 10); return isNaN(n) ? 0 : n; }
   function show(node, on){ node.hidden = !on; }
   function norm(s){ return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  /* SPEED: the number formatters are made once and reused (same output as before) */
+  var NF_WHOLE = new Intl.NumberFormat('en-GB');
+  var NF_PENCE = new Intl.NumberFormat('en-GB', { minimumFractionDigits:2, maximumFractionDigits:2 });
   function money(n){
     var whole = Math.round(n) === n;
-    return '£' + Number(n).toLocaleString('en-GB', whole ? {} : { minimumFractionDigits:2, maximumFractionDigits:2 });
+    return '£' + (whole ? NF_WHOLE : NF_PENCE).format(Number(n));
   }
   function getType(){ var r = form.querySelector('input[name="type"]:checked'); return r ? r.value : ''; }
   function scrollToEl(node){
@@ -3352,16 +3359,33 @@ var RideCrestPricing = (function(){
     });
   }
   /* no route yet: an empty map of Southampton with a prompt */
+  var mapShowsRoute = false;
   function resetMap(){
     if(!map) return;
+    mapShowsRoute = false;
     mapLayer.clearLayers();
     mapHint.hidden = false;
     map.setView([SOTON.lat, SOTON.lon], 11);
   }
   /* map is always visible on step 1 */
   function mapIsOpen(){ return true; }
-  /* load the map straight away showing Southampton */
-  ensureMap().then(function(){ resetMap(); }).catch(function(){});
+  /* SPEED (23 Oct 2026): the map is still always there, showing Southampton, but its library and tiles now start
+     loading once the page has finished and gone quiet, so they no longer compete with the first thing customers
+     see. The map box keeps its height, so nothing moves. If a route is needed sooner, showMap() loads it at once. */
+  var mapStarted = false;
+  function startMap(){
+    if(mapStarted) return;
+    mapStarted = true;
+    ensureMap().then(function(){ if(!mapShowsRoute) resetMap(); }).catch(function(){});
+  }
+  (function(){
+    function whenIdle(){
+      if(window.requestIdleCallback) window.requestIdleCallback(startMap, { timeout:2500 });
+      else setTimeout(startMap, 400);
+    }
+    if(document.readyState === 'complete') whenIdle();
+    else window.addEventListener('load', whenIdle);
+  })();
   /* the line to draw: the road route if we have it, else straight lines between the points */
   function routeLine(points){
     var g = routeShapes[waypointKey(points)], out = [];
@@ -3372,6 +3396,8 @@ var RideCrestPricing = (function(){
   function showMap(points, seq){
     ensureMap().then(function(L){
       if(seq !== priceSeq) return;
+      mapShowsRoute = true;
+      mapStarted = true;
       mapHint.hidden = true;
       mapLayer.clearLayers();
       var path = routeLine(points);
